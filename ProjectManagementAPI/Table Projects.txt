@@ -1,0 +1,59 @@
+Table Projects {
+  ProjectId int [primary key, not null]
+  Name nvarchar(100) [not null]
+  Description nvarchar(max) [not null]
+  StartDate datetime [not null]
+  EndDate datetime
+  StatusId int [ref: > Status.StatusId, not null]
+  CustomerId int [ref: > Customers.CustomerId, not null]
+  ServiceId int [ref: > Services.ServiceId, not null]
+  ProjectManagerId int [ref: > ProjectManagers.ProjectManagerId, not null]
+  TotalPrice decimal(10,2) [not null]
+}
+
+Table Customers {
+  CustomerId int [primary key, not null]
+  CustomerName nvarchar(100) [not null]
+  ContactPerson nvarchar(100) [not null]
+}
+
+Table Services {
+  ServiceId int [primary key, not null]
+  ServiceName varchar(100) [not null]
+  PricePerUnit decimal(10,2) [not null]
+  ServiceTypeId int [ref: > ServiceTypes.ServiceTypeId, not null]
+  UnitId int [ref: > Units.UnitId, not null]
+}
+
+Table ServiceTypes {
+  ServiceTypeId int [primary key, not null]
+  ServiceTypeName varchar(100) [not null]
+}
+
+Table Units {
+  UnitId int [primary key, not null]
+  UnitName varchar(50) [not null]
+}
+
+Table Status {
+  StatusId int [primary key, not null]
+  StatusName nvarchar(50) [not null]
+}
+
+Table ProjectManagers {
+  ProjectManagerId int [primary key, not null]
+  FirstName nvarchar(100) [not null]
+  LastName nvarchar(100) [not null]
+  Email varchar(100) [not null]
+  RoleId int [ref: > Roles.RoleId, not null]
+}
+
+Table Roles {
+  RoleId int [primary key, not null]
+  RoleName varchar(100)
+}
+
+Table ProjectMembers {
+  ProjectId int [ref: > Projects.ProjectId, not null]
+  ProjectManagerId int [ref: > ProjectManagers.ProjectManagerId, not null]
+}
