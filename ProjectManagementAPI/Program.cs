@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectManagementAPI.Data;
+using ProjectManagementAPI.Interfaces;
+using ProjectManagementAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 
 
 if (app.Environment.IsDevelopment())
