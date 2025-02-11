@@ -1,9 +1,9 @@
 ﻿using ProjectManagementAPI.DTOs;
-using Data.Models;
+using ProjectManagementAPI.Models;
 
-namespace ProjectManagementAPI.Helpers;
+namespace ProjectManagement.BusinessLayer.Factories;
 
-public static class CustomerMapper
+public static class CustomerFactory
 {
     public static CustomerDTO ToDTO(Customer customer)
     {
@@ -15,12 +15,12 @@ public static class CustomerMapper
         };
     }
 
-    public static Customer ToEntity(CustomerInputDTO customerInputDTO)
+    public static Customer FromDTO(CustomerInputDTO dto)
     {
         return new Customer
         {
-            CustomerName = customerInputDTO.CustomerName,
-            ContactPerson = customerInputDTO.ContactPerson
+            CustomerName = dto.CustomerName,
+            ContactPerson = dto.ContactPerson ?? string.Empty
         };
     }
 }

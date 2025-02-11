@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Data.Models;
-using Data.Repositories;
 using Data.Interfaces;
-using ProjectManagementAPI.DTOs;
+using Data.Factories;
+using Data.DTOs;
+
 
 namespace ProjectManagementAPI.Controllers;
 
+[ApiController]
+[Route("api/[controller]")]
 public class ProjectController : ControllerBase
 {
     private readonly IProjectRepository _projectRepository;
@@ -33,14 +36,29 @@ public class ProjectController : ControllerBase
         return Ok(project);
     }
 
+    [HttpGet("search/{name}")]
+    public async Task<IActionResult> FindProjectByName(string name)
+    {
+        var projects = await _projectRepository.FindByNameAsync(name);
+
+        if (projects == null || !projects.Any())
+        {
+            return NotFound($"No projects found with name: {name}");
+        }
+
+        return Ok(projects);
+    }
+
 
     [HttpPost]
-    public async Task<IActionResult> CreateProject([FromBody] Project project)
+    public async Task<IActionResult> CreateProject([FromBody] ProjectInputDTO projectDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
+
+        var project = ProjectFactory.CreateProject(projectDto);
 
         await _projectRepository.AddAsync(project);
         return CreatedAtAction(nameof(GetProjectById), new { id = project.ProjectId }, project);
