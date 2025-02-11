@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using ProjectManagementAPI.Data;
-using ProjectManagementAPI.Interfaces;
-using ProjectManagementAPI.Repositories;
+using Data;
+using Data.Interfaces;
+using Data.Repositories;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 

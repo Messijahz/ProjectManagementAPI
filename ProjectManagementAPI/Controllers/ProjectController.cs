@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ProjectManagementAPI.Interfaces;
-using ProjectManagementAPI.Models;
+using Data.Models;
+using Data.Repositories;
+using Data.Interfaces;
+using ProjectManagementAPI.DTOs;
 
 namespace ProjectManagementAPI.Controllers;
 
