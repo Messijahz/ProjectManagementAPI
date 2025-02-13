@@ -7,3 +7,5 @@ obj/
 *.user
 *.userosscache
 *.sln.docstates
+frontend/
+node_modules/
