@@ -135,6 +135,7 @@ namespace ProjectManagementAPI.Migrations
                 {
                     ProjectId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    ProjectNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -199,14 +200,69 @@ namespace ProjectManagementAPI.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Customers",
+                columns: new[] { "CustomerId", "ContactPerson", "CustomerName" },
+                values: new object[] { 1, "Bruce Wayne", "Wayne Enterprises" });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "RoleId", "RoleName" },
+                values: new object[,]
+                {
+                    { 1, "Project Manager" },
+                    { 2, "Senior Developer" },
+                    { 3, "Business Analyst" },
+                    { 4, "QA Engineer" },
+                    { 5, "Consultant" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ServiceTypes",
+                columns: new[] { "ServiceTypeId", "ServiceTypeName" },
+                values: new object[,]
+                {
+                    { 1, "IT Consulting" },
+                    { 2, "Software Development" },
+                    { 3, "Project Management" },
+                    { 4, "Business Analysis" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Statuses",
                 columns: new[] { "StatusId", "StatusName" },
                 values: new object[,]
                 {
-                    { 1, "New" },
+                    { 1, "Not Started" },
                     { 2, "In Progress" },
-                    { 3, "Completed" }
+                    { 3, "On Hold" },
+                    { 4, "Completed" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Units",
+                columns: new[] { "UnitId", "UnitName" },
+                values: new object[,]
+                {
+                    { 1, "Hours" },
+                    { 2, "Days" },
+                    { 3, "Weeks" },
+                    { 4, "Months" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ProjectManagers",
+                columns: new[] { "ProjectManagerId", "Email", "FirstName", "LastName", "RoleId" },
+                values: new object[] { 1, "andreas.laine@domain.com", "Andreas", "Laine", 1 });
+
+            migrationBuilder.InsertData(
+                table: "Services",
+                columns: new[] { "ServiceId", "PricePerUnit", "ServiceName", "ServiceTypeId", "UnitId" },
+                values: new object[] { 1, 1500m, "IT Consulting", 1, 1 });
+
+            migrationBuilder.InsertData(
+                table: "Projects",
+                columns: new[] { "ProjectId", "CustomerId", "Description", "EndDate", "Name", "ProjectManagerId", "ProjectNumber", "ServiceId", "StartDate", "StatusId", "TotalPrice" },
+                values: new object[] { 1, 1, "Update the software with a new mobile app", null, "New mobile app", 1, "P-1001", 1, new DateTime(2025, 2, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 50000m });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectManagers_RoleId",
@@ -227,6 +283,12 @@ namespace ProjectManagementAPI.Migrations
                 name: "IX_Projects_ProjectManagerId",
                 table: "Projects",
                 column: "ProjectManagerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_ProjectNumber",
+                table: "Projects",
+                column: "ProjectNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_ServiceId",

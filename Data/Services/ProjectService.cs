@@ -1,16 +1,19 @@
 ﻿using Data.DTOs;
 using Data.Interfaces;
 using Data.Factories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Services;
 
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ApplicationDbContext _context;
 
-    public ProjectService(IProjectRepository projectRepository)
+    public ProjectService(IProjectRepository projectRepository, ApplicationDbContext context)
     {
         _projectRepository = projectRepository;
+        _context = context;
     }
 
     public async Task<IEnumerable<ProjectDTO>> GetAllProjectsAsync()
@@ -33,7 +36,7 @@ public class ProjectService : IProjectService
 
     public async Task<bool> AddProjectAsync(ProjectInputDTO projectInputDTO)
     {
-        var project = ProjectFactory.CreateProject(projectInputDTO);
+        var project = await ProjectFactory.CreateProjectAsync(projectInputDTO, _context);
         await _projectRepository.AddAsync(project);
         return true;
     }
@@ -44,14 +47,22 @@ public class ProjectService : IProjectService
         if (existingProject == null)
             return false;
 
+        //Här hämtar jag in IDn baserat på namn.
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.CustomerName == projectInputDTO.CustomerName);
+        var service = await _context.Services.FirstOrDefaultAsync(s => s.ServiceName == projectInputDTO.ServiceName);
+        var projectManager = await _context.ProjectManagers.FirstOrDefaultAsync(pm => pm.FirstName + " " + pm.LastName == projectInputDTO.ProjectManagerName);
+
+        if (customer == null || service == null || projectManager == null)
+            return false;
+
         existingProject.Name = projectInputDTO.Name;
         existingProject.Description = projectInputDTO.Description!;
         existingProject.StartDate = projectInputDTO.StartDate;
         existingProject.EndDate = projectInputDTO.EndDate;
         existingProject.StatusId = projectInputDTO.StatusId;
-        existingProject.CustomerId = projectInputDTO.CustomerId;
-        existingProject.ServiceId = projectInputDTO.ServiceId;
-        existingProject.ProjectManagerId = projectInputDTO.ProjectManagerId;
+        existingProject.CustomerId = customer.CustomerId;
+        existingProject.ServiceId = service.ServiceId;
+        existingProject.ProjectManagerId = projectManager.ProjectManagerId;
         existingProject.TotalPrice = projectInputDTO.TotalPrice;
 
         return await _projectRepository.UpdateAsync(existingProject);

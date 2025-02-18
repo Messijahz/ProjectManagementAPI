@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ProjectManagementAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250211172901_InitialCreate")]
+    [Migration("20250218080200_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,6 +46,14 @@ namespace ProjectManagementAPI.Migrations
                     b.HasKey("CustomerId");
 
                     b.ToTable("Customers");
+
+                    b.HasData(
+                        new
+                        {
+                            CustomerId = 1,
+                            ContactPerson = "Bruce Wayne",
+                            CustomerName = "Wayne Enterprises"
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.Project", b =>
@@ -74,6 +82,11 @@ namespace ProjectManagementAPI.Migrations
                     b.Property<int>("ProjectManagerId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ProjectNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
@@ -92,11 +105,29 @@ namespace ProjectManagementAPI.Migrations
 
                     b.HasIndex("ProjectManagerId");
 
+                    b.HasIndex("ProjectNumber")
+                        .IsUnique();
+
                     b.HasIndex("ServiceId");
 
                     b.HasIndex("StatusId");
 
                     b.ToTable("Projects");
+
+                    b.HasData(
+                        new
+                        {
+                            ProjectId = 1,
+                            CustomerId = 1,
+                            Description = "Update the software with a new mobile app",
+                            Name = "New mobile app",
+                            ProjectManagerId = 1,
+                            ProjectNumber = "P-1001",
+                            ServiceId = 1,
+                            StartDate = new DateTime(2025, 2, 17, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StatusId = 1,
+                            TotalPrice = 50000m
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.ProjectManager", b =>
@@ -130,6 +161,16 @@ namespace ProjectManagementAPI.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("ProjectManagers");
+
+                    b.HasData(
+                        new
+                        {
+                            ProjectManagerId = 1,
+                            Email = "andreas.laine@domain.com",
+                            FirstName = "Andreas",
+                            LastName = "Laine",
+                            RoleId = 1
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.ProjectMember", b =>
@@ -162,6 +203,33 @@ namespace ProjectManagementAPI.Migrations
                     b.HasKey("RoleId");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            RoleName = "Project Manager"
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            RoleName = "Senior Developer"
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            RoleName = "Business Analyst"
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            RoleName = "QA Engineer"
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            RoleName = "Consultant"
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.Service", b =>
@@ -193,6 +261,16 @@ namespace ProjectManagementAPI.Migrations
                     b.HasIndex("UnitId");
 
                     b.ToTable("Services");
+
+                    b.HasData(
+                        new
+                        {
+                            ServiceId = 1,
+                            PricePerUnit = 1500m,
+                            ServiceName = "IT Consulting",
+                            ServiceTypeId = 1,
+                            UnitId = 1
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.ServiceType", b =>
@@ -211,6 +289,28 @@ namespace ProjectManagementAPI.Migrations
                     b.HasKey("ServiceTypeId");
 
                     b.ToTable("ServiceTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            ServiceTypeId = 1,
+                            ServiceTypeName = "IT Consulting"
+                        },
+                        new
+                        {
+                            ServiceTypeId = 2,
+                            ServiceTypeName = "Software Development"
+                        },
+                        new
+                        {
+                            ServiceTypeId = 3,
+                            ServiceTypeName = "Project Management"
+                        },
+                        new
+                        {
+                            ServiceTypeId = 4,
+                            ServiceTypeName = "Business Analysis"
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.Status", b =>
@@ -234,7 +334,7 @@ namespace ProjectManagementAPI.Migrations
                         new
                         {
                             StatusId = 1,
-                            StatusName = "New"
+                            StatusName = "Not Started"
                         },
                         new
                         {
@@ -244,6 +344,11 @@ namespace ProjectManagementAPI.Migrations
                         new
                         {
                             StatusId = 3,
+                            StatusName = "On Hold"
+                        },
+                        new
+                        {
+                            StatusId = 4,
                             StatusName = "Completed"
                         });
                 });
@@ -264,6 +369,28 @@ namespace ProjectManagementAPI.Migrations
                     b.HasKey("UnitId");
 
                     b.ToTable("Units");
+
+                    b.HasData(
+                        new
+                        {
+                            UnitId = 1,
+                            UnitName = "Hours"
+                        },
+                        new
+                        {
+                            UnitId = 2,
+                            UnitName = "Days"
+                        },
+                        new
+                        {
+                            UnitId = 3,
+                            UnitName = "Weeks"
+                        },
+                        new
+                        {
+                            UnitId = 4,
+                            UnitName = "Months"
+                        });
                 });
 
             modelBuilder.Entity("Data.Models.Project", b =>

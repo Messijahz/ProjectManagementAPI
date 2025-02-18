@@ -19,9 +19,9 @@ public class Service
 
     [ForeignKey("ServiceType")]
     public required int ServiceTypeId { get; set; }
-    public required ServiceType ServiceType { get; set; }
+    public ServiceType? ServiceType { get; set; }
 
     [ForeignKey("Unit")]
     public required int UnitId { get; set; }
-    public required Unit Unit { get; set; }
+    public Unit? Unit { get; set; }
 }

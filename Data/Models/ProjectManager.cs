@@ -23,5 +23,5 @@ public class ProjectManager
 
     [ForeignKey("Role")]
     public required int RoleId { get; set; }
-    public required Role Role { get; set; }
+    public Role? Role { get; set; }
 }

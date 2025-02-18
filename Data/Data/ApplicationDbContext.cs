@@ -21,6 +21,10 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Project>()
+            .HasIndex(p => p.ProjectNumber)
+            .IsUnique();
+
         modelBuilder.Entity<ProjectMember>()
             .HasKey(pm => new { pm.ProjectId, pm.ProjectManagerId });
 
@@ -36,11 +40,80 @@ public class ApplicationDbContext : DbContext
            .HasForeignKey(pm => pm.ProjectManagerId)
            .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Status>().HasData(
-            new Status { StatusId = 1, StatusName = "New" },
-            new Status { StatusId = 2, StatusName = "In Progress" },
-            new Status { StatusId = 3, StatusName = "Completed" }
-        );
-    }
 
+        modelBuilder.Entity<Status>().HasData(
+            new Status { StatusId = 1, StatusName = "Not Started" },
+            new Status { StatusId = 2, StatusName = "In Progress" },
+            new Status { StatusId = 3, StatusName = "On Hold" },
+            new Status { StatusId = 4, StatusName = "Completed" }
+        );
+
+        modelBuilder.Entity<Role>().HasData(
+            new Role { RoleId = 1, RoleName = "Project Manager" },
+            new Role { RoleId = 2, RoleName = "Senior Developer" },
+            new Role { RoleId = 3, RoleName = "Business Analyst" },
+            new Role { RoleId = 4, RoleName = "QA Engineer" },
+            new Role { RoleId = 5, RoleName = "Consultant" }
+        );
+
+        modelBuilder.Entity<Unit>().HasData(
+            new Unit { UnitId = 1, UnitName = "Hours" },
+            new Unit { UnitId = 2, UnitName = "Days" },
+            new Unit { UnitId = 3, UnitName = "Weeks" },
+            new Unit { UnitId = 4, UnitName = "Months" }
+         );
+
+        modelBuilder.Entity<ServiceType>().HasData(
+            new ServiceType { ServiceTypeId = 1, ServiceTypeName = "IT Consulting" },
+            new ServiceType { ServiceTypeId = 2, ServiceTypeName = "Software Development" },
+            new ServiceType { ServiceTypeId = 3, ServiceTypeName = "Project Management" },
+            new ServiceType { ServiceTypeId = 4, ServiceTypeName = "Business Analysis" }
+         );
+
+        modelBuilder.Entity<ProjectManager>().HasData(
+            new ProjectManager
+            {
+                ProjectManagerId = 1,
+                FirstName = "Andreas",
+                LastName = "Laine",
+                Email = "andreas.laine@domain.com",
+                RoleId = 1
+            }
+        );
+
+        modelBuilder.Entity<Customer>().HasData(
+             new Customer 
+             { CustomerId = 1, 
+                 CustomerName = "Wayne Enterprises", 
+                 ContactPerson = "Bruce Wayne" }
+        );
+
+        modelBuilder.Entity<Service>().HasData(
+             new Service
+             {
+                 ServiceId = 1,
+                 ServiceName = "IT Consulting",
+                 PricePerUnit = 1500,
+                 ServiceTypeId = 1,
+                 UnitId = 1,
+             }
+        );
+
+        modelBuilder.Entity<Project>().HasData(
+        new Project
+        {
+            ProjectId = 1,
+            ProjectNumber = "P-1001",
+            Name = "New mobile app",
+            Description = "Update the software with a new mobile app",
+            StartDate = new DateTime(2025, 02, 17),
+            StatusId = 1,
+            CustomerId = 1,
+            ServiceId = 1,
+            ProjectManagerId = 1,
+            TotalPrice = 50000
+        }
+);
+
+    }
 }
