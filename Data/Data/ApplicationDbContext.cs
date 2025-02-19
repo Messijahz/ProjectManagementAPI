@@ -89,14 +89,10 @@ public class ApplicationDbContext : DbContext
         );
 
         modelBuilder.Entity<Service>().HasData(
-             new Service
-             {
-                 ServiceId = 1,
-                 ServiceName = "IT Consulting",
-                 PricePerUnit = 1500,
-                 ServiceTypeId = 1,
-                 UnitId = 1,
-             }
+            new Service { ServiceId = 1, ServiceName = "IT Consulting", PricePerUnit = 1500, ServiceTypeId = 1, UnitId = 1 },
+            new Service { ServiceId = 2, ServiceName = "Software Development", PricePerUnit = 2000, ServiceTypeId = 2, UnitId = 1 },
+            new Service { ServiceId = 3, ServiceName = "Project Management", PricePerUnit = 2500, ServiceTypeId = 3, UnitId = 1 },
+            new Service { ServiceId = 4, ServiceName = "Business Analysis", PricePerUnit = 1800, ServiceTypeId = 4, UnitId = 1 }
         );
 
         modelBuilder.Entity<Project>().HasData(

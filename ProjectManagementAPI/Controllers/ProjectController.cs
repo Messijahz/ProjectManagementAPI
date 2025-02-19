@@ -6,7 +6,6 @@ using Data.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Data;
 
-
 namespace ProjectManagementAPI.Controllers;
 
 [ApiController]
@@ -21,7 +20,6 @@ public class ProjectController : ControllerBase
         _projectRepository = projectRepository;
         _context = context;
     }
-
 
     [HttpGet]
     public async Task<IActionResult> GetAllProjects()
@@ -41,20 +39,6 @@ public class ProjectController : ControllerBase
         return Ok(project);
     }
 
-    [HttpGet("search/{name}")]
-    public async Task<IActionResult> FindProjectByName(string name)
-    {
-        var projects = await _projectRepository.FindByNameAsync(name);
-
-        if (projects == null || !projects.Any())
-        {
-            return NotFound($"No projects found with name: {name}");
-        }
-
-        return Ok(projects);
-    }
-
-
     [HttpPost]
     public async Task<IActionResult> CreateProject([FromBody] ProjectInputDTO projectDto)
     {
@@ -65,7 +49,68 @@ public class ProjectController : ControllerBase
 
         try
         {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.CustomerName == projectDto.CustomerName);
+
+            if (customer == null)
+            {
+                customer = new Customer
+                {
+                    CustomerName = projectDto.CustomerName,
+                    ContactPerson = projectDto.ContactPerson
+                };
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+            }
+
+            var nameParts = projectDto.ProjectManagerName.Split(' ');
+            var projectManager = await _context.ProjectManagers
+                .FirstOrDefaultAsync(pm => pm.FirstName + " " + pm.LastName == projectDto.ProjectManagerName);
+
+            if (projectManager == null)
+            {
+                projectManager = new ProjectManager
+                {
+                    FirstName = nameParts[0],
+                    LastName = nameParts.Length > 1 ? nameParts[1] : "",
+                    RoleId = 1,
+                    Email = ""
+                };
+                _context.ProjectManagers.Add(projectManager);
+                await _context.SaveChangesAsync();
+            }
+
+            var service = await _context.Services
+                .FirstOrDefaultAsync(s => s.ServiceName == projectDto.ServiceName);
+
+            if (service == null)
+            {
+                var serviceType = await _context.ServiceTypes
+                    .FirstOrDefaultAsync(st => st.ServiceTypeName == projectDto.ServiceName);
+
+                if (serviceType == null)
+                {
+                    serviceType = new ServiceType
+                    {
+                        ServiceTypeName = projectDto.ServiceName
+                    };
+                    _context.ServiceTypes.Add(serviceType);
+                    await _context.SaveChangesAsync();
+                }
+
+                service = new Service
+                {
+                    ServiceName = projectDto.ServiceName,
+                    ServiceTypeId = serviceType.ServiceTypeId,
+                    PricePerUnit = projectDto.PricePerUnit,
+                    UnitId = 1
+                };
+                _context.Services.Add(service);
+                await _context.SaveChangesAsync();
+            }
+
             var project = await ProjectFactory.CreateProjectAsync(projectDto, _context);
+
             await _projectRepository.AddAsync(project);
 
             return CreatedAtAction(nameof(GetProjectById), new { id = project.ProjectId }, project);
@@ -76,12 +121,9 @@ public class ProjectController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message});
+            return BadRequest(new { message = ex.Message });
         }
-
-
     }
-
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectInputDTO projectDto)
@@ -91,55 +133,92 @@ public class ProjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var existingProject = await _projectRepository.GetByIdAsync(id);
-        if (existingProject == null)
-        {
-            return NotFound($"Project with ID {id} not found.");
-        }
-
         try
         {
-            existingProject.Name = projectDto.Name;
-            existingProject.Description = projectDto.Description ?? existingProject.Description;
-            existingProject.StartDate = projectDto.StartDate;
-            existingProject.EndDate = projectDto.EndDate;
-            existingProject.StatusId = projectDto.StatusId;
-            existingProject.TotalPrice = projectDto.TotalPrice;
+            var project = await _projectRepository.GetByIdAsync(id);
+            if (project == null)
+            {
+                return NotFound($"Project with ID {id} not found.");
+            }
 
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.CustomerName == projectDto.CustomerName);
+
             if (customer == null)
             {
-                return BadRequest($"Customer '{projectDto.CustomerName}' does not exist.");
+                customer = new Customer
+                {
+                    CustomerName = projectDto.CustomerName,
+                    ContactPerson = projectDto.ContactPerson
+                };
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
             }
-            existingProject.CustomerId = customer.CustomerId;
+
+            var nameParts = projectDto.ProjectManagerName.Split(' ');
+            var projectManager = await _context.ProjectManagers
+                .FirstOrDefaultAsync(pm => pm.FirstName + " " + pm.LastName == projectDto.ProjectManagerName);
+
+            if (projectManager == null)
+            {
+                projectManager = new ProjectManager
+                {
+                    FirstName = nameParts[0],
+                    LastName = nameParts.Length > 1 ? nameParts[1] : "",
+                    RoleId = 1,
+                    Email = ""
+                };
+                _context.ProjectManagers.Add(projectManager);
+                await _context.SaveChangesAsync();
+            }
 
             var service = await _context.Services
                 .FirstOrDefaultAsync(s => s.ServiceName == projectDto.ServiceName);
+
             if (service == null)
             {
-                return BadRequest($"Service '{projectDto.ServiceName}' does not exist.");
-            }
-            existingProject.ServiceId = service.ServiceId;
+                var serviceType = await _context.ServiceTypes
+                    .FirstOrDefaultAsync(st => st.ServiceTypeName == projectDto.ServiceName);
 
-            // Här tar jag och delar upp projektledarens namn i två delar i en lista och kollar om det finns en projektledare med dessa namn.
-            var nameParts = projectDto.ProjectManagerName.Split(' ');
-            // Om namnet inte innehåller både för och efternamn så returnerar jag en BadRequest.
-            if (nameParts.Length < 2)
-            {
-                return BadRequest($"Invalid Project Manager name format: {projectDto.ProjectManagerName}. Use 'First Last'.");
-            }
-            // Annars kollar jag om det finns en projektledare med dessa namn.
-            var projectManager = await _context.ProjectManagers
-                .FirstOrDefaultAsync(pm => pm.FirstName == nameParts[0] && pm.LastName == nameParts[1]);
-            if (projectManager == null)
-            {
-                return BadRequest($"Project Manager '{projectDto.ProjectManagerName}' does not exist.");
-            }
-            existingProject.ProjectManagerId = projectManager.ProjectManagerId;
+                if (serviceType == null)
+                {
+                    serviceType = new ServiceType
+                    {
+                        ServiceTypeName = projectDto.ServiceName
+                    };
+                    _context.ServiceTypes.Add(serviceType);
+                    await _context.SaveChangesAsync();
+                }
 
-            await _projectRepository.UpdateAsync(existingProject);
-            return NoContent();
+                service = new Service
+                {
+                    ServiceName = projectDto.ServiceName,
+                    ServiceTypeId = serviceType.ServiceTypeId,
+                    PricePerUnit = projectDto.PricePerUnit,
+                    UnitId = 1
+                };
+                _context.Services.Add(service);
+                await _context.SaveChangesAsync();
+            }
+
+            project.Name = projectDto.Name;
+            project.Description = projectDto.Description ?? project.Description;
+            project.StartDate = projectDto.StartDate;
+            project.EndDate = projectDto.EndDate;
+            project.StatusId = projectDto.StatusId;
+            project.CustomerId = customer.CustomerId;
+            project.ServiceId = service.ServiceId;
+            project.ProjectManagerId = projectManager.ProjectManagerId;
+            project.TotalPrice = projectDto.TotalPrice;
+
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
+
+            return Ok(project);
+        }
+        catch (DbUpdateException dbEx)
+        {
+            return BadRequest(new { message = "Database error: " + dbEx.InnerException?.Message });
         }
         catch (Exception ex)
         {
@@ -149,15 +228,15 @@ public class ProjectController : ControllerBase
 
 
     [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProject(int id)
+    public async Task<IActionResult> DeleteProject(int id)
+    {
+        var project = await _projectRepository.GetByIdAsync(id);
+        if (project == null)
         {
-            var project = await _projectRepository.GetByIdAsync(id);
-            if (project == null)
-            {
-                return NotFound($"Project with ID {id} not found.");
-            }
-
-            await _projectRepository.DeleteAsync(id);
-            return NoContent();
+            return NotFound($"Project with ID {id} not found.");
         }
+
+        await _projectRepository.DeleteAsync(id);
+        return NoContent();
+    }
 }
