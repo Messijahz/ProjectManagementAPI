@@ -5,6 +5,7 @@ using Data.Factories;
 using Data.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Data;
+using Microsoft.Extensions.Logging;
 
 namespace ProjectManagementAPI.Controllers;
 
@@ -14,11 +15,13 @@ public class ProjectController : ControllerBase
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<ProjectController> _logger;
 
-    public ProjectController(IProjectRepository projectRepository, ApplicationDbContext context)
+    public ProjectController(IProjectRepository projectRepository, ApplicationDbContext context, ILogger<ProjectController> logger)
     {
         _projectRepository = projectRepository;
         _context = context;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -34,7 +37,7 @@ public class ProjectController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
         {
-            return NotFound($"Project with ID {id} not found.");
+            return NotFound($"Projekt med ID {id} hittades inte.");
         }
         return Ok(project);
     }
@@ -47,11 +50,11 @@ public class ProjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.CustomerName == projectDto.CustomerName);
-
             if (customer == null)
             {
                 customer = new Customer
@@ -66,7 +69,6 @@ public class ProjectController : ControllerBase
             var nameParts = projectDto.ProjectManagerName.Split(' ');
             var projectManager = await _context.ProjectManagers
                 .FirstOrDefaultAsync(pm => pm.FirstName + " " + pm.LastName == projectDto.ProjectManagerName);
-
             if (projectManager == null)
             {
                 projectManager = new ProjectManager
@@ -82,12 +84,10 @@ public class ProjectController : ControllerBase
 
             var service = await _context.Services
                 .FirstOrDefaultAsync(s => s.ServiceName == projectDto.ServiceName);
-
             if (service == null)
             {
                 var serviceType = await _context.ServiceTypes
                     .FirstOrDefaultAsync(st => st.ServiceTypeName == projectDto.ServiceName);
-
                 if (serviceType == null)
                 {
                     serviceType = new ServiceType
@@ -110,17 +110,21 @@ public class ProjectController : ControllerBase
             }
 
             var project = await ProjectFactory.CreateProjectAsync(projectDto, _context);
-
             await _projectRepository.AddAsync(project);
 
+            await transaction.CommitAsync();
             return CreatedAtAction(nameof(GetProjectById), new { id = project.ProjectId }, project);
         }
         catch (DbUpdateException dbEx)
         {
-            return BadRequest(new { message = "Database error: " + dbEx.InnerException?.Message });
+            await transaction.RollbackAsync();
+            _logger.LogError("Databasfel vid skapande av projekt: {Error}", dbEx.InnerException?.Message);
+            return BadRequest(new { message = "Databasfel: " + dbEx.InnerException?.Message });
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+            _logger.LogError("Transaction rollback triggered: {Error}", ex.Message);
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -133,17 +137,17 @@ public class ProjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             var project = await _projectRepository.GetByIdAsync(id);
             if (project == null)
             {
-                return NotFound($"Project with ID {id} not found.");
+                return NotFound($"Projekt med ID {id} hittades inte.");
             }
 
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.CustomerName == projectDto.CustomerName);
-
             if (customer == null)
             {
                 customer = new Customer
@@ -158,7 +162,6 @@ public class ProjectController : ControllerBase
             var nameParts = projectDto.ProjectManagerName.Split(' ');
             var projectManager = await _context.ProjectManagers
                 .FirstOrDefaultAsync(pm => pm.FirstName + " " + pm.LastName == projectDto.ProjectManagerName);
-
             if (projectManager == null)
             {
                 projectManager = new ProjectManager
@@ -174,12 +177,10 @@ public class ProjectController : ControllerBase
 
             var service = await _context.Services
                 .FirstOrDefaultAsync(s => s.ServiceName == projectDto.ServiceName);
-
             if (service == null)
             {
                 var serviceType = await _context.ServiceTypes
                     .FirstOrDefaultAsync(st => st.ServiceTypeName == projectDto.ServiceName);
-
                 if (serviceType == null)
                 {
                     serviceType = new ServiceType
@@ -214,18 +215,22 @@ public class ProjectController : ControllerBase
             _context.Projects.Update(project);
             await _context.SaveChangesAsync();
 
+            await transaction.CommitAsync();
             return Ok(project);
         }
         catch (DbUpdateException dbEx)
         {
-            return BadRequest(new { message = "Database error: " + dbEx.InnerException?.Message });
+            await transaction.RollbackAsync();
+            _logger.LogError("Databasfel vid uppdatering av projekt: {Error}", dbEx.InnerException?.Message);
+            return BadRequest(new { message = "Databasfel: " + dbEx.InnerException?.Message });
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+            _logger.LogError("Transaction rollback triggered vid uppdatering: {Error}", ex.Message);
             return BadRequest(new { message = ex.Message });
         }
     }
-
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProject(int id)
@@ -233,7 +238,7 @@ public class ProjectController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
         {
-            return NotFound($"Project with ID {id} not found.");
+            return NotFound($"Projekt med ID {id} hittades inte.");
         }
 
         await _projectRepository.DeleteAsync(id);

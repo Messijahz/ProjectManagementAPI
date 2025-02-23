@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Data;
 using Data.Interfaces;
 using Data.Repositories;
+using Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IProjectManagerRepository, ProjectManagerRepository>();
 
 builder.Services.AddControllers();
 
@@ -33,6 +35,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Application started.");
 
 if (app.Environment.IsDevelopment())
 {
