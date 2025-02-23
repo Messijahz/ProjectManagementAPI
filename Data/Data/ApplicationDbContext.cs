@@ -84,8 +84,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Customer>().HasData(
              new Customer 
              { CustomerId = 1, 
-                 CustomerName = "Wayne Enterprises", 
-                 ContactPerson = "Bruce Wayne" }
+                 CustomerName = "Borås Kommun", 
+                 ContactPerson = "Anders Andersson" }
         );
 
         modelBuilder.Entity<Service>().HasData(

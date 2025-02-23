@@ -1,0 +1,173 @@
+@import "../styles/layout.css";
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: #505050;
+    padding: 8px;
+    border-radius: 8px;
+    gap: 8px;
+    width: 350px;
+    border: 1px solid #666;
+    transition: all 0.3s ease-in-out;
+}
+
+.search-container:focus-within {
+    box-shadow: 0 0 10px rgba(0, 150, 255, 0.6);
+}
+
+.search-input {
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    padding: 5px;
+    outline: none;
+    width: 100%;
+}
+
+.search-icon {
+    color: white;
+    font-size: 18px;
+}
+
+.new-project-btn {
+    padding: 12px 18px;
+    font-size: 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.new-project-btn:hover {
+    background: #0056b3;
+}
+
+
+.project-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #2b2b2b;
+}
+
+.project-table thead {
+    background: #333;
+    color: white;
+    text-align: left;
+}
+
+.project-table th, .project-table td {
+    padding: 14px;
+    border-bottom: 1px solid #444;
+}
+
+.status-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: capitalize;
+    min-width: 110px;
+}
+
+.status-box.not-started {
+    background-color: #D3D3D3;
+    color: #000000;
+}
+
+.status-box.in-progress {
+    background-color: #00BFFF;
+    color: rgb(0, 0, 0);
+}
+
+.status-box.completed {
+    background-color: #33cc33;
+    color: rgb(0, 0, 0);
+}
+
+.status-box.on-hold {
+    background-color: #FFD700;
+    color: rgb(0, 0, 0);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+td.action-buttons {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 14px;
+    width: 100px;
+}
+
+.button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.edit-btn, .delete-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 18px;
+    padding: 0;
+    background-color: white;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-btn:hover {
+    background-color: rgb(255, 166, 0);
+}
+
+.delete-btn:hover {
+    background-color: rgb(255, 0, 0);
+}
+
+.expand-icon button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    color: white;
+    outline: none;
+}
+
+.expand-icon button:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.expand-icon button.expanded {
+    transform: rotate(90deg);
+}
